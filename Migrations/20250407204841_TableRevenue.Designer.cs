@@ -3,6 +3,7 @@ using System;
 using Expenses.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Expenses.Migrations
 {
     [DbContext(typeof(ExpenseContext))]
-    partial class ExpenseContextModelSnapshot : ModelSnapshot
+    [Migration("20250407204841_TableRevenue")]
+    partial class TableRevenue
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,8 +58,8 @@ namespace Expenses.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<float>("AmountRevenue")
-                        .HasColumnType("real");
+                    b.Property<int>("AmountRevenue")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("DateRevenue")
                         .HasColumnType("timestamp with time zone");

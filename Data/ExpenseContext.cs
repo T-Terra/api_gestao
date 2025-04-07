@@ -7,6 +7,7 @@ public class ExpenseContext: DbContext
 {
     // define as tabelas do banco
     public DbSet<ExpensesModel> Expenses { get; set; }
+    public DbSet<RevenueModel> Revenues { get; set; }
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

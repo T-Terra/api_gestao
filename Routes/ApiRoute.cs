@@ -1,5 +1,6 @@
 ﻿using Expenses.Data;
 using Expenses.Models;
+using Expenses.Models.Dto;
 using Microsoft.EntityFrameworkCore;
 
 namespace Expenses.Routes;
@@ -55,6 +56,21 @@ public static class ApiRoute
             await context.SaveChangesAsync(ct);
 
             return Results.Ok(expense);
+        });
+        
+        // Revenues
+        route.MapPost("revenue", async (RevenueDto req, ExpenseContext context, CancellationToken ct) =>
+        {
+            var revenue = new RevenueModel(req.AmountRevenue);
+            await context.AddAsync(revenue, ct);
+            await context.SaveChangesAsync(ct);
+            return Results.Created("/api/revenue", revenue);
+        });
+        
+        route.MapGet("revenue", async (ExpenseContext context, CancellationToken ct) =>
+        {
+            var revenue = await context.Revenues.ToListAsync(ct);
+            return Results.Ok(revenue);
         });
     }
 }
