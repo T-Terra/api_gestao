@@ -72,5 +72,37 @@ public static class ApiRoute
             var revenue = await context.Revenues.ToListAsync(ct);
             return Results.Ok(revenue);
         });
+        
+        // Category
+        route.MapPost("category", async (CategoryDto req, ExpenseContext context, CancellationToken ct) =>
+        {
+            var category = new CategoryModel(req.NameCategory, req.DescriptionCategory);
+            
+            await context.AddAsync(category, ct);
+            await context.SaveChangesAsync(ct);
+            return Results.Created("/api/category", category);
+        });
+
+        route.MapGet("category", async (ExpenseContext context, CancellationToken ct) =>
+        {
+            var category = await context.Categories.ToListAsync(ct);
+            return Results.Ok(category);
+        });
+
+        route.MapDelete("category/{id:guid}", async (Guid id, ExpenseContext context, CancellationToken ct) =>
+        {
+            var category = await context.Categories.FirstOrDefaultAsync(x => x.Id == id, ct);
+            
+            if (category == null)
+            {
+                return Results.NotFound($"Categoria com ID {id} não encontrada.");
+            }
+
+            context.Categories.Remove(category);
+            await context.SaveChangesAsync(ct);
+
+            return Results.Ok(category);
+            
+        });
     }
 }
