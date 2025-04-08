@@ -10,6 +10,8 @@ public static class ApiRoute
     public static void ApiRoutes(this WebApplication app)
     {
         var route = app.MapGroup("api");
+        
+        // Expenses
         route.MapPost("add", async (ExpenseRequest req, ExpenseContext context, CancellationToken ct) =>
         {
             // cria uma despesa
@@ -56,6 +58,12 @@ public static class ApiRoute
             await context.SaveChangesAsync(ct);
 
             return Results.Ok(expense);
+        });
+
+        route.MapGet("expenses/total", async (ExpenseContext context, CancellationToken ct) =>
+        {
+            var total = await context.Expenses.SumAsync(e => e.AmountExpense, ct);
+            return Results.Ok(new { total});
         });
         
         // Revenues
