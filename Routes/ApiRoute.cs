@@ -2,6 +2,7 @@
 using Expenses.Models;
 using Expenses.Models.Dto;
 using Expenses.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace Expenses.Routes;
@@ -13,7 +14,7 @@ public static class ApiRoute
         var route = app.MapGroup("api");
         
         //Token
-        route.MapGet("gentoken", (TokenService service) 
+        route.MapGet("gentoken", [Authorize] (TokenService service) 
             => service.GenerateToken(new UserModel("Gabriel", "123", new[]
             {
                 "viewer", "premium"

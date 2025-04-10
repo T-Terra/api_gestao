@@ -15,6 +15,7 @@ public class TokenService
     {
         _config = config;
     }
+    
     public string GenerateToken(UserModel user)
     {
         // Gera uma instãncia do JTW class
