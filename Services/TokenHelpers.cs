@@ -30,7 +30,7 @@ public static class TokenHelpers
         if(string.IsNullOrWhiteSpace(token))
             return (false, Guid.Empty);
         
-        var tokenParams = GetTokenValidationParameters(_configuration);
+        var tokenParams = GetTokenValidationParameters(); // arrumar
 
         var validTokenResult = await new JwtSecurityTokenHandler().ValidateTokenAsync(token, tokenParams);
         
