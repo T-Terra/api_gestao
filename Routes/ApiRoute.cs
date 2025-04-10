@@ -1,6 +1,7 @@
 ﻿using Expenses.Data;
 using Expenses.Models;
 using Expenses.Models.Dto;
+using Expenses.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Expenses.Routes;
@@ -10,6 +11,13 @@ public static class ApiRoute
     public static void ApiRoutes(this WebApplication app)
     {
         var route = app.MapGroup("api");
+        
+        //Token
+        route.MapGet("gentoken", (TokenService service) 
+            => service.GenerateToken(new UserModel("Gabriel", "123", new[]
+            {
+                "viewer", "premium"
+            })));
         
         // Expenses
         route.MapPost("add", async (ExpenseRequest req, ExpenseContext context, CancellationToken ct) =>

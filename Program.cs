@@ -1,6 +1,8 @@
+using Expenses.Config;
 using Expenses.Routes;
 using Expenses.Data;
 using Expenses.Middlewares;
+using Expenses.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ExpenseContext>();
+builder.Services.AddScoped<Configuration>();
+builder.Services.AddTransient<TokenService>();
 
 builder.Services.AddCors(options =>
 {
