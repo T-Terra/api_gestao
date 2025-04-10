@@ -25,16 +25,7 @@ builder.Services.AddAuthentication(options =>
     {
         options.RequireHttpsMetadata = false; // deixe true em produção
         options.SaveToken = true;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["JwtSettings:SecretKey"] ?? string.Empty)),
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-            ValidAudience = builder.Configuration["JwtSettings:Audience"],
-            ClockSkew = TimeSpan.Zero // sem tolerância de tempo para expiração
-        };
+        options.TokenValidationParameters = TokenHelpers.GetTokenValidationParameters(builder.Configuration);
     });
 builder.Services.AddAuthorization();
 

@@ -30,7 +30,35 @@ public class TokenService
         {
             Subject = GenerateClaimsIdentity(user),
             SigningCredentials = credentials,
-            Expires = DateTime.UtcNow.AddHours(2),
+            Issuer = _config.GetIssuer(),
+            Audience = _config.GetAudience(),
+            Expires = DateTime.UtcNow.AddMinutes(_config.GetExpires()),
+        };
+        
+        // Gera o token
+        var token = handler.CreateToken(tokenDescriptor);
+        
+        // Gera uma string do token
+        return handler.WriteToken(token);
+    }
+
+    public string GenerateRefreshToken(UserModel user)
+    {
+        // Gera uma instãncia do JTW class
+        var handler = new JwtSecurityTokenHandler();
+
+        var key = Encoding.ASCII.GetBytes(_config.GetPrivateKey());
+        
+        // credenciais para criar o token
+        var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature);
+
+        var tokenDescriptor = new SecurityTokenDescriptor()
+        {
+            Subject = GenerateClaimsIdentityRefresh(user),
+            SigningCredentials = credentials,
+            Issuer = _config.GetIssuer(),
+            Audience = _config.GetAudience(),
+            Expires = DateTime.UtcNow.AddMinutes(_config.GetExpiresRefresh()),
         };
         
         // Gera o token
@@ -46,6 +74,14 @@ public class TokenService
         ci.AddClaim(new Claim(ClaimTypes.Name, user.UserId.ToString()));
         foreach (var role in user.Roles)
             ci.AddClaim(new Claim(ClaimTypes.Role, role));
+        
+        return ci;
+    }
+    
+    public static ClaimsIdentity GenerateClaimsIdentityRefresh(UserModel user)
+    {
+        var ci = new ClaimsIdentity();
+        ci.AddClaim(new Claim(ClaimTypes.Name, user.UserId.ToString()));
         
         return ci;
     }

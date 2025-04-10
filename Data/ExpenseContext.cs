@@ -9,7 +9,17 @@ public class ExpenseContext: DbContext
     public DbSet<ExpensesModel> Expenses { get; set; }
     public DbSet<RevenueModel> Revenues { get; set; }
     public DbSet<CategoryModel> Categories { get; set; }
-    
+    public DbSet<UserModel> Users { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        
+        modelBuilder.Entity<UserModel>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (optionsBuilder.IsConfigured) return;

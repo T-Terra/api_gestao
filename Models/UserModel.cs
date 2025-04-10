@@ -1,21 +1,27 @@
-﻿namespace Expenses.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Expenses.Models;
 
 public class UserModel
 {
+    [Key]
     public Guid UserId { get; init; } 
     public string Username { get; private set; }
     public string Password { get; private set; }
+    [Required]
+    public string Email { get; private set; }
     public string[] Roles { get; private set; }
     public DateTime DateCreated { get; private set; }
 
     public UserModel() {}
     
-    public UserModel(string username, string password, string[] roles)
+    public UserModel(string username, string password, string email) 
     {
         UserId = Guid.NewGuid();
         Username = username;
         Password = password;
-        Roles = roles;
+        Email = email;
+        Roles = ["viewer"];
         DateCreated = DateTime.UtcNow;
     }
 
@@ -27,6 +33,11 @@ public class UserModel
     public void ChangePassword(string newPassword)
     {
         Password = newPassword;
+    }
+
+    public void ChangeEmail(string newEmail)
+    {
+        Email = newEmail;
     }
 
     public void ChangeRoles(string[] newRoles)
