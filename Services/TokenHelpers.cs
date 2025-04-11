@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Expenses.Config;
 using Expenses.Models;
 using Microsoft.IdentityModel.Tokens;
 
@@ -25,20 +26,18 @@ public static class TokenHelpers
         };
     }
 
-    public static async Task<(bool isValid, Guid? UserId)> ValidateToken(string token)
+    public static TokenValidationParameters GetTokenValidationParameters(Configuration configuration)
     {
-        if(string.IsNullOrWhiteSpace(token))
-            return (false, Guid.Empty);
-        
-        var tokenParams = GetTokenValidationParameters(); // arrumar
-
-        var validTokenResult = await new JwtSecurityTokenHandler().ValidateTokenAsync(token, tokenParams);
-        
-        if (!validTokenResult.IsValid)
-            return (false, Guid.Empty);
-        
-        var userId = validTokenResult.Claims.FirstOrDefault(c => c.Key == ClaimTypes.Name).Value as Guid?;
-        
-        return (true, userId);
+        return new TokenValidationParameters
+        {
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configuration.GetPrivateKey())),
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidIssuer = configuration.GetIssuer(),
+            ValidAudience = configuration.GetAudience(),
+            ClockSkew = TimeSpan.Zero // sem tolerância de tempo para expiração
+        };
     }
 }

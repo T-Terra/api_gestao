@@ -85,4 +85,21 @@ public class TokenService
         
         return ci;
     }
+    
+    public async Task<(bool isValid, string UserId)> ValidateToken(string token)
+    {
+        if(string.IsNullOrWhiteSpace(token))
+            return (false, string.Empty);
+        
+        var tokenParams = TokenHelpers.GetTokenValidationParameters(_config);
+
+        var validTokenResult = await new JwtSecurityTokenHandler().ValidateTokenAsync(token, tokenParams);
+        
+        if (!validTokenResult.IsValid)
+            return (false, string.Empty);
+        
+        var userId = validTokenResult.Claims.FirstOrDefault(c => c.Key == ClaimTypes.Name).Value as string;
+        
+        return (true, userId);
+    }
 }

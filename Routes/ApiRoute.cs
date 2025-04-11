@@ -57,13 +57,13 @@ public static class ApiRoute
             if(string.IsNullOrWhiteSpace(req.RefreshToken))
                 return Results.BadRequest();
             
-            var isValidatedResult = await TokenHelpers.ValidateToken(req.RefreshToken);
+            var isValidatedResult = await service.ValidateToken(req.RefreshToken);
             
             if(!isValidatedResult.isValid)
                 return Results.Unauthorized();
 
             var userId = isValidatedResult.UserId;
-            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId, ct);
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == userId, ct);
             
             if (user == null)
                 return Results.Unauthorized();
