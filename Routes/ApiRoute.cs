@@ -183,7 +183,7 @@ public static class ApiRoute
             await context.AddAsync(category, ct);
             await context.SaveChangesAsync(ct);
             
-            return Results.Created("/api/category", category);
+            return Results.Created("/api/category", new CategoryDto(category.Id, category.NameCategory, category.DescriptionCategory, category.DateCreated));
         });
 
         route.MapGet("category", [Authorize] async (HttpContext http, ExpenseContext context, CancellationToken ct) =>
@@ -193,6 +193,7 @@ public static class ApiRoute
             var category = await context.Categories
                 .Where(c => c.UserId.ToString() == userIdStr)
                 .Select(c => new CategoryDto(
+                    c.Id,
                     c.NameCategory, 
                     c.DescriptionCategory, 
                     c.DateCreated))
@@ -213,7 +214,7 @@ public static class ApiRoute
             context.Categories.Remove(category);
             await context.SaveChangesAsync(ct);
 
-            return Results.Ok(category);
+            return Results.Ok(new CategoryDto(category.Id, category.NameCategory, category.DescriptionCategory, category.DateCreated));
             
         });
     }
