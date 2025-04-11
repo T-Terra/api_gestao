@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Expenses.Config;
 using Expenses.Data;
@@ -168,18 +169,35 @@ public static class ApiRoute
         });
         
         // Category
-        route.MapPost("category", [Authorize] async (CategoryDto req, ExpenseContext context, CancellationToken ct) =>
+        route.MapPost("category", [Authorize] async (HttpContext http, CategoryRequest req, ExpenseContext context, CancellationToken ct) =>
         {
-            var category = new CategoryModel(req.NameCategory, req.DescriptionCategory);
+            var userIdStr = http.User.FindFirst(ClaimTypes.Name)?.Value;
+            var guid = Guid.TryParse(userIdStr, out Guid userId);
+
+            if (guid == false)
+            {
+                return Results.Conflict();
+            }
             
+            var category = new CategoryModel(req.NameCategory, req.DescriptionCategory, userId);
             await context.AddAsync(category, ct);
             await context.SaveChangesAsync(ct);
+            
             return Results.Created("/api/category", category);
         });
 
-        route.MapGet("category", [Authorize] async (ExpenseContext context, CancellationToken ct) =>
+        route.MapGet("category", [Authorize] async (HttpContext http, ExpenseContext context, CancellationToken ct) =>
         {
-            var category = await context.Categories.ToListAsync(ct);
+            var userIdStr = http.User.FindFirst(ClaimTypes.Name)?.Value;
+            
+            var category = await context.Categories
+                .Where(c => c.UserId.ToString() == userIdStr)
+                .Select(c => new CategoryDto(
+                    c.NameCategory, 
+                    c.DescriptionCategory, 
+                    c.DateCreated))
+                .ToListAsync(ct);
+            
             return Results.Ok(category);
         });
 

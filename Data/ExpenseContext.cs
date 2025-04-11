@@ -18,6 +18,11 @@ public class ExpenseContext: DbContext
         modelBuilder.Entity<UserModel>()
             .HasIndex(u => u.Email)
             .IsUnique();
+        
+        modelBuilder.Entity<CategoryModel>()
+            .HasOne(c => c.User)
+            .WithMany(u => u.Categories)
+            .HasForeignKey(c => c.UserId);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

@@ -12,6 +12,8 @@ public class UserModel
     public string Email { get; private set; }
     public string[] Roles { get; private set; }
     public DateTime DateCreated { get; private set; }
+    
+    public List<CategoryModel> Categories { get; set; } = new();
 
     public UserModel() {}
     
