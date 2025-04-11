@@ -40,23 +40,19 @@ public static class ApiRoute
             var cookiesOptionsToken = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
                 Expires = DateTimeOffset.UtcNow.AddMinutes(configuration.GetExpires()),
             };
             
             var cookiesOptionsRefresh = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
                 Expires = DateTimeOffset.UtcNow.AddMinutes(configuration.GetExpiresRefresh()),
             };
             
             http.Response.Cookies.Append("token", token, cookiesOptionsToken);
             http.Response.Cookies.Append("refreshtoken", refreshToken, cookiesOptionsRefresh);
             
-            return Results.Ok(new { message = "Login com sucesso." });
+            return Results.Ok(new { username = user.Username, message = "Login com sucesso." });
         });
         
         route.MapPost("register", async (UserRequest req, ExpenseContext context, CancellationToken ct) =>
