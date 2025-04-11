@@ -1,3 +1,3 @@
 ﻿namespace Expenses.Models.Dto;
 
-public record UserDto(string Username, string Password, string Email);
+public record UserDto(string Username, string Email);

@@ -3,6 +3,7 @@ using System.Text;
 using Expenses.Data;
 using Expenses.Models;
 using Expenses.Models.Dto;
+using Expenses.Models.Requests;
 using Expenses.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,7 @@ public static class ApiRoute
         var route = app.MapGroup("api");
         
         //Auth
-        route.MapPost("login", async (UserDto req, TokenService service, ExpenseContext context, CancellationToken ct) =>
+        route.MapPost("login", async (UserRequest req, TokenService service, ExpenseContext context, CancellationToken ct) =>
         {
             var bytes = Encoding.UTF8.GetBytes(req.Password);
             var hash = SHA256.HashData(bytes);
@@ -37,8 +38,13 @@ public static class ApiRoute
             return Results.Ok(new { token, refreshToken });
         });
         
-        route.MapPost("register", async (UserDto req, ExpenseContext context, CancellationToken ct) =>
+        route.MapPost("register", async (UserRequest req, ExpenseContext context, CancellationToken ct) =>
         {
+            var userExists = await context.Users.FirstOrDefaultAsync(user => user.Email == req.Email, ct);
+            
+            if (userExists != null)
+                return Results.Conflict(new { Message = $"User {req.Email} already exists."});
+            
             var bytesPassword = Encoding.UTF8.GetBytes(req.Password);
             var hash = SHA256.HashData(bytesPassword);
 
@@ -49,7 +55,7 @@ public static class ApiRoute
             await context.AddAsync(user, ct);
             await context.SaveChangesAsync(ct);
             
-            return Results.Created($"/api/users/{user.UserId}", user);
+            return Results.Created($"/api/users/{user.UserId}", new UserDto(user.Username, user.Email));
         });
         
         route.MapPost("refresh-token", async (RefreshTokenDto req, TokenService service, ExpenseContext context, CancellationToken ct) =>
