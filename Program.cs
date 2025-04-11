@@ -26,6 +26,19 @@ builder.Services.AddAuthentication(options =>
         options.RequireHttpsMetadata = false; // deixe true em produção
         options.SaveToken = true;
         options.TokenValidationParameters = TokenHelpers.GetTokenValidationParameters(builder.Configuration);
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Cookies["token"];
+                if (!string.IsNullOrEmpty(accessToken))
+                {
+                    context.Token = accessToken;
+                }
+                
+                return Task.CompletedTask;
+            }
+        };
     });
 builder.Services.AddAuthorization();
 
@@ -33,7 +46,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("ApiPolicy", policy =>
     {
-        policy.WithOrigins("http://localhost:5173").WithMethods(AllowedHttpMethods.Methods).AllowAnyHeader();
+        policy.WithOrigins("http://localhost:5173")
+            .WithMethods(AllowedHttpMethods.Methods)
+            .AllowCredentials()
+            .AllowAnyHeader();
     });
 });
 

@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using Expenses.Config;
 using Expenses.Data;
 using Expenses.Models;
 using Expenses.Models.Dto;
@@ -17,7 +18,8 @@ public static class ApiRoute
         var route = app.MapGroup("api");
         
         //Auth
-        route.MapPost("login", async (UserRequest req, TokenService service, ExpenseContext context, CancellationToken ct) =>
+        route.MapPost("login", 
+            async (HttpContext http, UserRequest req, TokenService service, Configuration configuration, ExpenseContext context, CancellationToken ct) =>
         {
             var bytes = Encoding.UTF8.GetBytes(req.Password);
             var hash = SHA256.HashData(bytes);
@@ -29,13 +31,32 @@ public static class ApiRoute
             if (user == null)
                 return Results.Unauthorized();
             
-            if (user.Password != hashString || user.Username != req.Username)
+            if (user.Password != hashString)
                 return Results.Unauthorized();
             
             var token = service.GenerateToken(user);
             var refreshToken = service.GenerateRefreshToken(user);
+
+            var cookiesOptionsToken = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTimeOffset.UtcNow.AddMinutes(configuration.GetExpires()),
+            };
             
-            return Results.Ok(new { token, refreshToken });
+            var cookiesOptionsRefresh = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTimeOffset.UtcNow.AddMinutes(configuration.GetExpiresRefresh()),
+            };
+            
+            http.Response.Cookies.Append("token", token, cookiesOptionsToken);
+            http.Response.Cookies.Append("refreshtoken", refreshToken, cookiesOptionsRefresh);
+            
+            return Results.Ok(new { message = "Login com sucesso." });
         });
         
         route.MapPost("register", async (UserRequest req, ExpenseContext context, CancellationToken ct) =>
