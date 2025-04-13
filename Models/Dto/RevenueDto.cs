@@ -1,3 +1,3 @@
 ﻿namespace Expenses.Models.Dto;
 
-public record RevenueDto(float AmountRevenue);
+public record RevenueDto(decimal AmountRevenue, DateTime DateRevenue);

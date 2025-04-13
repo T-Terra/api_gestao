@@ -196,17 +196,38 @@ public static class ApiRoute
         });
         
         // Revenues
-        route.MapPost("revenue", [Authorize] async (RevenueDto req, ExpenseContext context, CancellationToken ct) =>
+        route.MapPost("revenue", [Authorize] async (HttpContext http, RevenueDto req, ExpenseContext context, CancellationToken ct) =>
         {
-            var revenue = new RevenueModel(req.AmountRevenue);
+            var userIdStr = http.User.FindFirst(ClaimTypes.Name)?.Value;
+            
+            if (string.IsNullOrWhiteSpace(userIdStr))
+                return Results.Conflict();
+            
+            var userId = Guid.Parse(userIdStr);
+            
+            var revenue = new RevenueModel(req.AmountRevenue, userId);
             await context.AddAsync(revenue, ct);
             await context.SaveChangesAsync(ct);
-            return Results.Created("/api/revenue", revenue);
+            
+            return Results.Created("/api/revenue", new RevenueDto(revenue.AmountRevenue, revenue.DateRevenue));
         });
         
-        route.MapGet("revenue", [Authorize] async (ExpenseContext context, CancellationToken ct) =>
+        route.MapGet("revenue", [Authorize] async (HttpContext http, ExpenseContext context, CancellationToken ct) =>
         {
-            var revenue = await context.Revenues.ToListAsync(ct);
+            var userIdStr = http.User.FindFirst(ClaimTypes.Name)?.Value;
+            
+            if (string.IsNullOrWhiteSpace(userIdStr))
+                return Results.Conflict();
+            
+            var userId = Guid.Parse(userIdStr);
+            
+            var revenue = await context.Revenues
+                .Where(e => e.UserId == userId)
+                .Select(c => new RevenueDto(
+                    c.AmountRevenue,
+                    c.DateRevenue))
+                .ToListAsync(ct);
+            
             return Results.Ok(revenue);
         });
         

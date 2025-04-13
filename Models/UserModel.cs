@@ -15,6 +15,7 @@ public class UserModel
     
     public List<CategoryModel> Categories { get; set; } = new();
     public List<ExpensesModel> Expenses { get; set; } = new();
+    public List<RevenueModel> Revenues { get; set; } = new();
 
     public UserModel() {}
     

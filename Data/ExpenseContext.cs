@@ -28,6 +28,11 @@ public class ExpenseContext: DbContext
             .HasOne(c => c.User)
             .WithMany(u => u.Expenses)
             .HasForeignKey(c => c.UserId);
+        
+        modelBuilder.Entity<RevenueModel>()
+            .HasOne(c => c.User)
+            .WithMany(u => u.Revenues)
+            .HasForeignKey(c => c.UserId);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
