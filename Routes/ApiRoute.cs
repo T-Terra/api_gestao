@@ -99,21 +99,48 @@ public static class ApiRoute
         });
         
         // Expenses
-        route.MapPost("add", [Authorize] async (ExpenseRequest req, ExpenseContext context, CancellationToken ct) =>
+        route.MapPost("add", [Authorize] async (HttpContext http, ExpenseRequest req, ExpenseContext context, CancellationToken ct) =>
         {
+            var userIdStr = http.User.FindFirst(ClaimTypes.Name)?.Value;
+            
+            if (string.IsNullOrWhiteSpace(userIdStr))
+                return Results.Conflict();
+            
             // cria uma despesa
-            var expense = new ExpensesModel(req.NameExpense, req.AmountExpense, req.DescriptionExpense, req.CategoryExpense);
+            var userId = Guid.Parse(userIdStr);
+            var expense = new ExpensesModel(req.NameExpense, req.AmountExpense, req.DescriptionExpense, req.CategoryExpense, userId);
             // adiciona no banco de dados
             await context.AddAsync(expense, ct);
             // Faz o commit no banco de dados
-            await context.SaveChangesAsync(ct);
+           await context.SaveChangesAsync(ct);
             
-            return Results.Created("/api/add", expense);
+            return Results.Created("/api/add", new ExpensesDto(
+                expense.Id, 
+                expense.NameExpense, 
+                expense.AmountExpense, 
+                expense.DescriptionExpense, 
+                expense.CategoryExpense, 
+                expense.DateExpense));
         });
 
-        route.MapGet("list", [Authorize] async (ExpenseContext context, CancellationToken ct) =>
+        route.MapGet("list", [Authorize] async (HttpContext http, ExpenseContext context, CancellationToken ct) =>
         {
-            var expenses = await context.Expenses.ToListAsync(ct);
+            var userIdStr = http.User.FindFirst(ClaimTypes.Name)?.Value;
+            
+            if (string.IsNullOrWhiteSpace(userIdStr))
+                return Results.Conflict();
+            
+            var userId = Guid.Parse(userIdStr);
+            var expenses = await context.Expenses
+                .Where(exp => exp.UserId == userId)
+                .Select(c => new ExpensesDto(
+                    c.Id,
+                    c.NameExpense,
+                    c.AmountExpense,
+                    c.DescriptionExpense,
+                    c.CategoryExpense,
+                    c.DateExpense))
+                .ToListAsync(ct);
             return Results.Ok(expenses);
         });
 
@@ -144,13 +171,28 @@ public static class ApiRoute
             context.Expenses.Remove(expense);
             await context.SaveChangesAsync(ct);
 
-            return Results.Ok(expense);
+            return Results.Ok(new ExpensesDto(
+                expense.Id, 
+                expense.NameExpense, 
+                expense.AmountExpense, 
+                expense.DescriptionExpense, 
+                expense.CategoryExpense, 
+                expense.DateExpense));
         });
 
-        route.MapGet("expenses/total", [Authorize] async (ExpenseContext context, CancellationToken ct) =>
+        route.MapGet("expenses/total", [Authorize] async (HttpContext http, ExpenseContext context, CancellationToken ct) =>
         {
-            var total = await context.Expenses.SumAsync(e => e.AmountExpense, ct);
-            return Results.Ok(new { total});
+            var userIdStr = http.User.FindFirst(ClaimTypes.Name)?.Value;
+            
+            if (string.IsNullOrWhiteSpace(userIdStr))
+                return Results.Conflict();
+            
+            var userId = Guid.Parse(userIdStr);
+            
+            var total = await context.Expenses
+                .Where(exp => exp.UserId == userId)    
+                .SumAsync(e => e.AmountExpense, ct);
+            return Results.Ok(new {total});
         });
         
         // Revenues

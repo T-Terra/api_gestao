@@ -14,6 +14,7 @@ public class UserModel
     public DateTime DateCreated { get; private set; }
     
     public List<CategoryModel> Categories { get; set; } = new();
+    public List<ExpensesModel> Expenses { get; set; } = new();
 
     public UserModel() {}
     
