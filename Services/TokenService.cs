@@ -67,7 +67,50 @@ public class TokenService
         // Gera uma string do token
         return handler.WriteToken(token);
     }
+    public string GenerateTokenInvalid()
+    {
+        // Gera uma instãncia do JTW class
+        var handler = new JwtSecurityTokenHandler();
 
+        var key = Encoding.ASCII.GetBytes(_config.GetPrivateKey());
+        
+        // credenciais para criar o token
+        var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature);
+
+        var tokenDescriptor = new SecurityTokenDescriptor()
+        {
+            SigningCredentials = credentials,
+            Expires = DateTime.UtcNow.AddMinutes(_config.GetExpires()),
+        };
+        
+        // Gera o token
+        var token = handler.CreateToken(tokenDescriptor);
+        
+        // Gera uma string do token
+        return handler.WriteToken(token);
+    }
+    public string GenerateRefreshTokenInvalid()
+    {
+        // Gera uma instãncia do JTW class
+        var handler = new JwtSecurityTokenHandler();
+
+        var key = Encoding.ASCII.GetBytes(_config.GetPrivateKey());
+        
+        // credenciais para criar o token
+        var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature);
+
+        var tokenDescriptor = new SecurityTokenDescriptor()
+        {
+            SigningCredentials = credentials,
+            Expires = DateTime.UtcNow.AddMinutes(_config.GetExpiresRefresh()),
+        };
+        
+        // Gera o token
+        var token = handler.CreateToken(tokenDescriptor);
+        
+        // Gera uma string do token
+        return handler.WriteToken(token);
+    }
     public static ClaimsIdentity GenerateClaimsIdentity(UserModel user)
     {
         var ci = new ClaimsIdentity();

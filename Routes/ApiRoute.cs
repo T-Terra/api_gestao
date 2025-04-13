@@ -53,7 +53,7 @@ public static class ApiRoute
             http.Response.Cookies.Append("token", token, cookiesOptionsToken);
             http.Response.Cookies.Append("refreshtoken", refreshToken, cookiesOptionsRefresh);
             
-            return Results.Ok(new { username = user.Username, message = "Login com sucesso." });
+            return Results.Ok(new { username = user.Username, message = "Login feito com sucesso." });
         });
         
         route.MapPost("register", async (UserRequest req, ExpenseContext context, CancellationToken ct) =>
@@ -76,7 +76,7 @@ public static class ApiRoute
             return Results.Created($"/api/users/{user.UserId}", new UserDto(user.Username, user.Email));
         });
         
-        route.MapPost("refresh-token", async (RefreshTokenDto req, TokenService service, ExpenseContext context, CancellationToken ct) =>
+        route.MapPost("refresh-token", [Authorize] async (RefreshTokenDto req, TokenService service, ExpenseContext context, CancellationToken ct) =>
         {
             if(string.IsNullOrWhiteSpace(req.RefreshToken))
                 return Results.BadRequest();
@@ -97,6 +97,39 @@ public static class ApiRoute
             
             return Results.Ok(new { token, refreshToken });
         });
+        
+        // Logout
+        route.MapPost("logout", [Authorize] async 
+            (
+                HttpContext http,
+                Configuration configuration,
+                TokenService service) =>
+            {
+                var userIdStr = http.User.FindFirst(ClaimTypes.Name)?.Value;
+            
+                if (string.IsNullOrWhiteSpace(userIdStr))
+                    return Results.Unauthorized();
+                
+                var token = service.GenerateTokenInvalid();
+                var refreshToken = service.GenerateRefreshTokenInvalid();
+                
+                var cookiesOptionsToken = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Expires = DateTimeOffset.UtcNow.AddDays(-1),
+                };
+                
+                var cookiesOptionsRefresh = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Expires = DateTimeOffset.UtcNow.AddDays(-1),
+                };
+                
+                http.Response.Cookies.Append("token", token, cookiesOptionsToken);
+                http.Response.Cookies.Append("refreshtoken", refreshToken, cookiesOptionsRefresh);
+            
+                return Results.Ok(new { message = "Logout feito com sucesso." });
+            });
         
         // Expenses
         route.MapPost("add", [Authorize] async (HttpContext http, ExpenseRequest req, ExpenseContext context, CancellationToken ct) =>
