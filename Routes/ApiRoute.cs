@@ -98,6 +98,8 @@ public static class ApiRoute
             return Results.Ok(new { token, refreshToken });
         });
         
+        route.MapGet("authcheck", [Authorize] () => Results.NoContent());
+        
         // Logout
         route.MapPost("logout", [Authorize] async 
             (
