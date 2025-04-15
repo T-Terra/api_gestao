@@ -6,6 +6,7 @@ using Expenses.Data;
 using Expenses.Models;
 using Expenses.Models.Dto;
 using Expenses.Models.Requests;
+using Expenses.Serializers;
 using Expenses.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -37,17 +38,20 @@ public static class ApiRoute
             
             var token = service.GenerateToken(user);
             var refreshToken = service.GenerateRefreshToken(user);
+            
+            var tokenDateTime = ConvertTimeZone.Convert(DateTimeOffset.UtcNow, configuration.GetExpires());
+            var refreshDateTime = ConvertTimeZone.Convert(DateTimeOffset.UtcNow, configuration.GetExpiresRefresh());
 
             var cookiesOptionsToken = new CookieOptions
             {
                 HttpOnly = true,
-                Expires = DateTimeOffset.UtcNow.AddMinutes(configuration.GetExpires()),
+                Expires = tokenDateTime,
             };
             
             var cookiesOptionsRefresh = new CookieOptions
             {
                 HttpOnly = true,
-                Expires = DateTimeOffset.UtcNow.AddMinutes(configuration.GetExpiresRefresh()),
+                Expires = refreshDateTime,
             };
             
             http.Response.Cookies.Append("token", token, cookiesOptionsToken);
@@ -76,16 +80,20 @@ public static class ApiRoute
             return Results.Created($"/api/users/{user.UserId}", new UserDto(user.Username, user.Email));
         });
         
-        route.MapPost("refresh-token", [Authorize] async (RefreshTokenDto req, TokenService service, ExpenseContext context, CancellationToken ct) =>
+        route.MapPost("refresh-token", async (
+            HttpContext http, TokenService service, Configuration configuration, ExpenseContext context, CancellationToken ct) =>
         {
-            if(string.IsNullOrWhiteSpace(req.RefreshToken))
+            var tokenHeader = http.Request.Cookies["token"] ?? string.Empty;
+            var refreshHeader = http.Request.Cookies["refreshtoken"] ?? string.Empty;
+            
+            if(!string.IsNullOrEmpty(tokenHeader))
+                return Results.NoContent();
+            
+            if(string.IsNullOrWhiteSpace(refreshHeader))
                 return Results.BadRequest();
             
-            var isValidatedResult = await service.ValidateToken(req.RefreshToken);
+            var isValidatedResult = await service.ValidateToken(refreshHeader);
             
-            if(!isValidatedResult.isValid)
-                return Results.Unauthorized();
-
             var userId = isValidatedResult.UserId;
             var user = await context.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == userId, ct);
             
@@ -95,7 +103,25 @@ public static class ApiRoute
             var token = service.GenerateToken(user);
             var refreshToken = service.GenerateRefreshToken(user);
             
-            return Results.Ok(new { token, refreshToken });
+            var tokenDateTime = ConvertTimeZone.Convert(DateTimeOffset.UtcNow, configuration.GetExpires());
+            var refreshDateTime = ConvertTimeZone.Convert(DateTimeOffset.UtcNow, configuration.GetExpiresRefresh());
+            
+            var cookiesOptionsToken = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = tokenDateTime,
+            };
+            
+            var cookiesOptionsRefresh = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = refreshDateTime,
+            };
+            
+            http.Response.Cookies.Append("token", token, cookiesOptionsToken);
+            http.Response.Cookies.Append("refreshtoken", refreshToken, cookiesOptionsRefresh);
+            
+            return Results.Ok(new { username = user.Username, message = "Sessão atualizada com sucesso." });
         });
         
         route.MapGet("authcheck", [Authorize] () => Results.NoContent());

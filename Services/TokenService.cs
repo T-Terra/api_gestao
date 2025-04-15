@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Expenses.Config;
 using Expenses.Models;
+using Expenses.Serializers;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Expenses.Services;
@@ -32,7 +33,8 @@ public class TokenService
             SigningCredentials = credentials,
             Issuer = _config.GetIssuer(),
             Audience = _config.GetAudience(),
-            Expires = DateTime.UtcNow.AddMinutes(_config.GetExpires()),
+            NotBefore = ConvertTimeZone.Convert(DateTime.UtcNow),
+            Expires = ConvertTimeZone.Convert(DateTime.UtcNow,_config.GetExpires()),
         };
         
         // Gera o token
@@ -41,7 +43,6 @@ public class TokenService
         // Gera uma string do token
         return handler.WriteToken(token);
     }
-
     public string GenerateRefreshToken(UserModel user)
     {
         // Gera uma instãncia do JTW class
@@ -58,7 +59,8 @@ public class TokenService
             SigningCredentials = credentials,
             Issuer = _config.GetIssuer(),
             Audience = _config.GetAudience(),
-            Expires = DateTime.UtcNow.AddMinutes(_config.GetExpiresRefresh()),
+            NotBefore = ConvertTimeZone.Convert(DateTime.UtcNow),
+            Expires = ConvertTimeZone.Convert(DateTime.UtcNow, _config.GetExpiresRefresh()),
         };
         
         // Gera o token
@@ -136,13 +138,15 @@ public class TokenService
         
         var tokenParams = TokenHelpers.GetTokenValidationParameters(_config);
 
-        var validTokenResult = await new JwtSecurityTokenHandler().ValidateTokenAsync(token, tokenParams);
+        var handler = new JwtSecurityTokenHandler();
+
+        var validTokenResult = await handler.ValidateTokenAsync(token, tokenParams);
         
         if (!validTokenResult.IsValid)
             return (false, string.Empty);
         
         var userId = validTokenResult.Claims.FirstOrDefault(c => c.Key == ClaimTypes.Name).Value as string;
-        
+
         return (true, userId);
     }
 }
