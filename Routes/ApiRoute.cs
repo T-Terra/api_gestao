@@ -45,12 +45,16 @@ public static class ApiRoute
             var cookiesOptionsToken = new CookieOptions
             {
                 HttpOnly = true,
+                SameSite = SameSiteMode.None,
+                Secure = true,
                 Expires = tokenDateTime,
             };
             
             var cookiesOptionsRefresh = new CookieOptions
             {
                 HttpOnly = true,
+                SameSite = SameSiteMode.None,
+                Secure = true,
                 Expires = refreshDateTime,
             };
             
