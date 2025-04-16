@@ -46,7 +46,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("ApiPolicy", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins("https://gestao-gastos-fxkw.vercel.app")
             .WithMethods(AllowedHttpMethods.Methods)
             .AllowCredentials()
             .AllowAnyHeader();
