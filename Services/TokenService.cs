@@ -33,8 +33,8 @@ public class TokenService
             SigningCredentials = credentials,
             Issuer = _config.GetIssuer(),
             Audience = _config.GetAudience(),
-            NotBefore = ConvertTimeZone.Convert(DateTime.UtcNow),
-            Expires = ConvertTimeZone.Convert(DateTime.UtcNow,_config.GetExpires()),
+            NotBefore = DateTime.UtcNow,
+            Expires = DateTime.UtcNow.AddMinutes(_config.GetExpires()),
         };
         
         // Gera o token
@@ -59,8 +59,8 @@ public class TokenService
             SigningCredentials = credentials,
             Issuer = _config.GetIssuer(),
             Audience = _config.GetAudience(),
-            NotBefore = ConvertTimeZone.Convert(DateTime.UtcNow),
-            Expires = ConvertTimeZone.Convert(DateTime.UtcNow, _config.GetExpiresRefresh()),
+            NotBefore = DateTime.UtcNow,
+            Expires = DateTime.UtcNow.AddMinutes(_config.GetExpiresRefresh()),
         };
         
         // Gera o token
