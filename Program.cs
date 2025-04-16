@@ -1,11 +1,10 @@
-using System.Text;
 using Expenses.Config;
 using Expenses.Routes;
 using Expenses.Data;
 using Expenses.Middlewares;
 using Expenses.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,5 +71,11 @@ app.ApiRoutes();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ExpenseContext>();
+    db.Database.Migrate();  // Aplica as migrations pendentes
+}
 
 app.Run();
