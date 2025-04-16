@@ -10,6 +10,10 @@ public class ExpenseContext: DbContext
     public DbSet<RevenueModel> Revenues { get; set; }
     public DbSet<CategoryModel> Categories { get; set; }
     public DbSet<UserModel> Users { get; set; }
+    
+    public ExpenseContext(DbContextOptions<ExpenseContext> options) : base(options)
+    {
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
