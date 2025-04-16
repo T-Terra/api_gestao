@@ -53,6 +53,12 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddDbContext<ExpenseContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("PostgreSQLConnection");
+    options.UseNpgsql(connectionString);
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

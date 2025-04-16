@@ -35,7 +35,7 @@ public class ExpenseContext: DbContext
             .HasForeignKey(c => c.UserId);
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    /*protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (optionsBuilder.IsConfigured) return;
         var configuration = new ConfigurationBuilder()
@@ -45,5 +45,5 @@ public class ExpenseContext: DbContext
         var connectionString = configuration.GetConnectionString("PostgreSQLConnection");
         optionsBuilder.UseNpgsql(connectionString);
         base.OnConfiguring(optionsBuilder);
-    }
+    }*/
 }
