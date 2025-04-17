@@ -46,7 +46,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("ApiPolicy", policy =>
     {
-        policy.WithOrigins("https://gestao-gastos-fxkw.vercel.app")
+        policy.WithOrigins("https://gestao-gastos.vercel.app")
             .WithMethods(AllowedHttpMethods.Methods)
             .AllowCredentials()
             .AllowAnyHeader();
