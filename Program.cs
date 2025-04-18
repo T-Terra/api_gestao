@@ -3,6 +3,7 @@ using Expenses.Routes;
 using Expenses.Data;
 using Expenses.Middlewares;
 using Expenses.Services;
+using Expenses.Services.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ExpenseContext>();
 builder.Services.AddScoped<Configuration>();
 builder.Services.AddTransient<TokenService>();
+builder.Services.AddTransient<AuthService>();
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -46,7 +48,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("ApiPolicy", policy =>
     {
-        policy.WithOrigins("https://gestao-gastos.vercel.app")
+        policy.WithOrigins("https://gestao-gastos.vercel.app", "http://localhost:5173")
             .WithMethods(AllowedHttpMethods.Methods)
             .AllowCredentials()
             .AllowAnyHeader();
