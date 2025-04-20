@@ -81,7 +81,13 @@ public static class ApiRoute
             expense.ChangeValues(req.NameExpense, req.AmountExpense, req.DescriptionExpense, req.CategoryExpense);
             await context.SaveChangesAsync(ct);
             
-            return Results.Ok(expense);
+            return Results.Ok(new ExpensesDto(
+                expense.Id, 
+                expense.NameExpense, 
+                expense.AmountExpense, 
+                expense.DescriptionExpense, 
+                expense.CategoryExpense, 
+                expense.DateExpense));
         });
 
         route.MapDelete("delete/{id:guid}", [Authorize] async (Guid id, ExpenseContext context, CancellationToken ct) =>
