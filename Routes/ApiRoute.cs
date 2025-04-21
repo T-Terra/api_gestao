@@ -179,6 +179,24 @@ public static class ApiRoute
             
             return Results.Created("/api/category", new CategoryDto(category.Id, category.NameCategory, category.DescriptionCategory, category.DateCreated));
         });
+        
+        route.MapPut("category/{id:guid}", [Authorize] async (Guid id, CategoryRequest req, ExpenseContext context, CancellationToken ct) =>
+        {
+            var category = await context.Categories.FirstOrDefaultAsync(x => x.Id == id, ct);
+            
+            if (category == null)
+                return Results.NotFound();
+            
+            category.SetCategory(req.NameCategory, req.DescriptionCategory);
+            await context.SaveChangesAsync(ct);
+            
+            return Results.Ok(new CategoryDto(
+                id, 
+                category.NameCategory, 
+                category.DescriptionCategory, 
+                category.DateCreated
+                ));
+        });
 
         route.MapGet("category", [Authorize] async (HttpContext http, ExpenseContext context, CancellationToken ct) =>
         {
