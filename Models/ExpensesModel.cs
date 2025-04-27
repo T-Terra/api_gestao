@@ -12,13 +12,16 @@ public class ExpensesModel
     public string? CategoryExpense { get; private set; }
     public DateTime DateExpense { get; private set; }
     [ForeignKey("User")]
-    public Guid UserId { get; set; }
+    public Guid UserId { get; private set; }
     public UserModel User { get; set; }
+    [ForeignKey("Category")]
+    public Guid CategoryId { get; set; }
+    public CategoryModel Category { get; set; }
     
     // Construtor
     
     public ExpensesModel() { }
-    public ExpensesModel(string nameExpense, decimal amountExpense, string descriptionExpense, string categoryExpense, Guid userId)
+    public ExpensesModel(string nameExpense, decimal amountExpense, string descriptionExpense, string categoryExpense, Guid userId, Guid categoryId)
     {
         Id = Guid.NewGuid();
         NameExpense = nameExpense;
@@ -26,14 +29,16 @@ public class ExpensesModel
         DescriptionExpense = descriptionExpense;
         CategoryExpense = categoryExpense;
         UserId = userId;
+        CategoryId = categoryId;
         DateExpense = DateTime.UtcNow;
     }
 
-    public void ChangeValues(string nameExpense, decimal amountExpense, string descriptionExpense, string categoryExpense)
+    public void ChangeValues(string nameExpense, decimal amountExpense, string descriptionExpense, string categoryExpense, Guid categoryId)
     {
         NameExpense = nameExpense;
         AmountExpense = amountExpense;
         DescriptionExpense = descriptionExpense;
         CategoryExpense = categoryExpense;
+        CategoryId = categoryId;
     }
 }

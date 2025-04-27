@@ -1,3 +1,3 @@
 ﻿namespace Expenses.Models;
 
-public record ExpenseRequest(string NameExpense, decimal AmountExpense, string DescriptionExpense, string CategoryExpense, Guid UserId);
+public record ExpenseRequest(string NameExpense, decimal AmountExpense, string DescriptionExpense, string CategoryExpense, Guid CategoryId);
