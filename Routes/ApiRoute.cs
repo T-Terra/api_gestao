@@ -91,6 +91,8 @@ public static class ApiRoute
                 expense.SetCategory(parsedGuid);
             }
             
+            var categoryName = await context.Categories.FirstOrDefaultAsync(x => x.CategoryId == Guid.Parse(req.CategoryId), ct);
+            
             await context.SaveChangesAsync(ct);
             
             return Results.Ok(new ExpensesDto(
@@ -99,7 +101,7 @@ public static class ApiRoute
                 expense.AmountExpense, 
                 expense.DescriptionExpense,
                 expense.DateExpense,
-                expense.CategoryId.ToString()));
+                categoryName.NameCategory));
         });
 
         route.MapDelete("delete/{id:guid}", [Authorize] async (Guid id, ExpenseContext context, CancellationToken ct) =>
