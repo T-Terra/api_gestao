@@ -92,7 +92,6 @@ public static class ApiRoute
             }
             
             var categoryName = await context.Categories.FirstOrDefaultAsync(x => x.CategoryId == Guid.Parse(req.CategoryId), ct);
-            
             await context.SaveChangesAsync(ct);
             
             return Results.Ok(new ExpensesDto(
