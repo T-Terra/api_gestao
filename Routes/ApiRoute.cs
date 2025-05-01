@@ -33,7 +33,12 @@ public static class ApiRoute
             
             // cria uma despesa
             var userId = Guid.Parse(userIdStr);
-            var expense = new ExpensesModel(req.NameExpense, req.AmountExpense, req.DescriptionExpense, req.CategoryExpense, userId);
+            var expense = new ExpensesModel(req.NameExpense, req.AmountExpense, req.DescriptionExpense, userId);
+            
+            if (!string.IsNullOrEmpty(req.CategoryId) && Guid.TryParse(req.CategoryId, out var parsedGuid))
+            {
+                expense.SetCategory(parsedGuid);
+            }
             // adiciona no banco de dados
             await context.AddAsync(expense, ct);
             // Faz o commit no banco de dados
@@ -43,9 +48,9 @@ public static class ApiRoute
                 expense.Id, 
                 expense.NameExpense, 
                 expense.AmountExpense, 
-                expense.DescriptionExpense, 
-                expense.CategoryExpense, 
-                expense.DateExpense));
+                expense.DescriptionExpense,
+                expense.DateExpense,
+                expense.CategoryId.ToString()));
         });
 
         route.MapGet("list", [Authorize] async (HttpContext http, ExpenseContext context, CancellationToken ct) =>
@@ -58,13 +63,14 @@ public static class ApiRoute
             var userId = Guid.Parse(userIdStr);
             var expenses = await context.Expenses
                 .Where(exp => exp.UserId == userId)
+                .Include(c => c.Categories)
                 .Select(c => new ExpensesDto(
                     c.Id,
                     c.NameExpense,
                     c.AmountExpense,
-                    c.DescriptionExpense,
-                    c.CategoryExpense,
-                    c.DateExpense))
+                    c.DescriptionExpense, 
+                    c.DateExpense,
+            c.Categories != null ? c.Categories.NameCategory : null))
                 .ToListAsync(ct);
             return Results.Ok(expenses);
         });
@@ -78,16 +84,22 @@ public static class ApiRoute
                 return Results.NotFound($"Despesa com ID {id} não encontrada.");
             }
             
-            expense.ChangeValues(req.NameExpense, req.AmountExpense, req.DescriptionExpense, req.CategoryExpense);
+            expense.ChangeValues(req.NameExpense, req.AmountExpense, req.DescriptionExpense);
+            
+            if (!string.IsNullOrEmpty(req.CategoryId) && Guid.TryParse(req.CategoryId, out var parsedGuid))
+            {
+                expense.SetCategory(parsedGuid);
+            }
+            
             await context.SaveChangesAsync(ct);
             
             return Results.Ok(new ExpensesDto(
                 expense.Id, 
                 expense.NameExpense, 
                 expense.AmountExpense, 
-                expense.DescriptionExpense, 
-                expense.CategoryExpense, 
-                expense.DateExpense));
+                expense.DescriptionExpense,
+                expense.DateExpense,
+                expense.CategoryId.ToString()));
         });
 
         route.MapDelete("delete/{id:guid}", [Authorize] async (Guid id, ExpenseContext context, CancellationToken ct) =>
@@ -106,9 +118,9 @@ public static class ApiRoute
                 expense.Id, 
                 expense.NameExpense, 
                 expense.AmountExpense, 
-                expense.DescriptionExpense, 
-                expense.CategoryExpense, 
-                expense.DateExpense));
+                expense.DescriptionExpense,
+                expense.DateExpense,
+                expense.CategoryId.ToString()));
         });
 
         route.MapGet("expenses/total", [Authorize] async (HttpContext http, ExpenseContext context, CancellationToken ct) =>
@@ -177,12 +189,12 @@ public static class ApiRoute
             await context.AddAsync(category, ct);
             await context.SaveChangesAsync(ct);
             
-            return Results.Created("/api/category", new CategoryDto(category.Id, category.NameCategory, category.DescriptionCategory, category.DateCreated));
+            return Results.Created("/api/category", new CategoryDto(category.CategoryId, category.NameCategory, category.DescriptionCategory, category.DateCreated));
         });
         
         route.MapPut("category/{id:guid}", [Authorize] async (Guid id, CategoryRequest req, ExpenseContext context, CancellationToken ct) =>
         {
-            var category = await context.Categories.FirstOrDefaultAsync(x => x.Id == id, ct);
+            var category = await context.Categories.FirstOrDefaultAsync(x => x.CategoryId == id, ct);
             
             if (category == null)
                 return Results.NotFound();
@@ -205,7 +217,7 @@ public static class ApiRoute
             var category = await context.Categories
                 .Where(c => c.UserId.ToString() == userIdStr)
                 .Select(c => new CategoryDto(
-                    c.Id,
+                    c.CategoryId,
                     c.NameCategory, 
                     c.DescriptionCategory, 
                     c.DateCreated))
@@ -216,7 +228,7 @@ public static class ApiRoute
 
         route.MapDelete("category/{id:guid}", [Authorize] async (Guid id, ExpenseContext context, CancellationToken ct) =>
         {
-            var category = await context.Categories.FirstOrDefaultAsync(x => x.Id == id, ct);
+            var category = await context.Categories.FirstOrDefaultAsync(x => x.CategoryId == id, ct);
             
             if (category == null)
             {
@@ -226,7 +238,7 @@ public static class ApiRoute
             context.Categories.Remove(category);
             await context.SaveChangesAsync(ct);
 
-            return Results.Ok(new CategoryDto(category.Id, category.NameCategory, category.DescriptionCategory, category.DateCreated));
+            return Results.Ok(new CategoryDto(category.CategoryId, category.NameCategory, category.DescriptionCategory, category.DateCreated));
             
         });
     }
