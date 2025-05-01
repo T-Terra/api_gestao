@@ -19,7 +19,7 @@ namespace Expenses.Migrations
                 name: "CategoryId",
                 table: "Expenses",
                 type: "uuid",
-                nullable: false,
+                nullable: true,
                 defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
 
             migrationBuilder.CreateIndex(

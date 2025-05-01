@@ -14,15 +14,7 @@ namespace Expenses.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_Expenses_Categories_CategoryId",
                 table: "Expenses");
-
-            migrationBuilder.AlterColumn<Guid>(
-                name: "CategoryId",
-                table: "Expenses",
-                type: "uuid",
-                nullable: true,
-                oldClrType: typeof(Guid),
-                oldType: "uuid");
-
+            
             migrationBuilder.AddForeignKey(
                 name: "FK_Expenses_Categories_CategoryId",
                 table: "Expenses",
