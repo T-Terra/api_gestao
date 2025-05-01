@@ -22,7 +22,7 @@ public class ExpenseContext: DbContext
         modelBuilder.Entity<UserModel>()
             .HasIndex(u => u.Email)
             .IsUnique();
-        
+
         modelBuilder.Entity<CategoryModel>()
             .HasOne(c => c.User)
             .WithMany(u => u.Categories)
@@ -32,6 +32,11 @@ public class ExpenseContext: DbContext
             .HasOne(c => c.User)
             .WithMany(u => u.Expenses)
             .HasForeignKey(c => c.UserId);
+            
+        modelBuilder.Entity<ExpensesModel>()
+            .HasOne(c => c.Categories)
+            .WithMany(u => u.CategoriesEx)
+            .HasForeignKey(c => c.CategoryId);
         
         modelBuilder.Entity<RevenueModel>()
             .HasOne(c => c.User)
