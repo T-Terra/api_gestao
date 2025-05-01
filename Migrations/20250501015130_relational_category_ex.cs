@@ -14,12 +14,7 @@ namespace Expenses.Migrations
             migrationBuilder.DropColumn(
                 name: "CategoryExpense",
                 table: "Expenses");
-
-            migrationBuilder.RenameColumn(
-                name: "Id",
-                table: "Categories",
-                newName: "CategoryId");
-
+            
             migrationBuilder.AddColumn<Guid>(
                 name: "CategoryId",
                 table: "Expenses",
