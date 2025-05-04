@@ -42,15 +42,17 @@ public static class ApiRoute
             // adiciona no banco de dados
             await context.AddAsync(expense, ct);
             // Faz o commit no banco de dados
-           await context.SaveChangesAsync(ct);
+            var category = await context.Categories.FirstOrDefaultAsync(x => x.CategoryId == Guid.Parse(req.CategoryId), ct);
+            await context.SaveChangesAsync(ct);
             
-            return Results.Created("/api/add", new ExpensesDtoWithoutName(
+            return Results.Created("/api/add", new ExpensesDto(
                 expense.Id, 
                 expense.NameExpense, 
                 expense.AmountExpense, 
                 expense.DescriptionExpense,
                 expense.DateExpense,
-                expense.CategoryId.ToString()));
+                category.NameCategory,
+                expense.CategoryId));
         });
 
         route.MapGet("list", [Authorize] async (HttpContext http, ExpenseContext context, CancellationToken ct) =>
