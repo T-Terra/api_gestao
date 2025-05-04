@@ -44,7 +44,7 @@ public static class ApiRoute
             // Faz o commit no banco de dados
            await context.SaveChangesAsync(ct);
             
-            return Results.Created("/api/add", new ExpensesDto(
+            return Results.Created("/api/add", new ExpensesDtoWithoutName(
                 expense.Id, 
                 expense.NameExpense, 
                 expense.AmountExpense, 
@@ -70,7 +70,8 @@ public static class ApiRoute
                     c.AmountExpense,
                     c.DescriptionExpense, 
                     c.DateExpense,
-            c.Categories != null ? c.Categories.NameCategory : null))
+            c.Categories != null ? c.Categories.NameCategory : null,
+                    c.Categories.CategoryId))
                 .ToListAsync(ct);
             return Results.Ok(expenses);
         });
@@ -91,7 +92,7 @@ public static class ApiRoute
                 expense.SetCategory(parsedGuid);
             }
             
-            var categoryName = await context.Categories.FirstOrDefaultAsync(x => x.CategoryId == Guid.Parse(req.CategoryId), ct);
+            var category = await context.Categories.FirstOrDefaultAsync(x => x.CategoryId == Guid.Parse(req.CategoryId), ct);
             await context.SaveChangesAsync(ct);
             
             return Results.Ok(new ExpensesDto(
@@ -100,7 +101,8 @@ public static class ApiRoute
                 expense.AmountExpense, 
                 expense.DescriptionExpense,
                 expense.DateExpense,
-                categoryName.NameCategory));
+                category.NameCategory,
+                category.CategoryId));
         });
 
         route.MapDelete("delete/{id:guid}", [Authorize] async (Guid id, ExpenseContext context, CancellationToken ct) =>
@@ -115,7 +117,7 @@ public static class ApiRoute
             context.Expenses.Remove(expense);
             await context.SaveChangesAsync(ct);
 
-            return Results.Ok(new ExpensesDto(
+            return Results.Ok(new ExpensesDtoWithoutName(
                 expense.Id, 
                 expense.NameExpense, 
                 expense.AmountExpense, 
